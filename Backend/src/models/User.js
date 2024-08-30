@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt =require('bcrypt')
+const Student =require('./Student');
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -28,6 +29,14 @@ UserSchema.pre('save', async function (next) {
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+//middleware to save the user whose role is student in student schema
+UserSchema.post('save', async function (doc, next) {
+  if (doc.role === 'student') {
+    await Student.create({ user: doc._id });
+  }
   next();
 });
 
